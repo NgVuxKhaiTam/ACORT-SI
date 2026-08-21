@@ -50,21 +50,12 @@ def construct_observed_state(X_list, Y_list, lambda_list, lam, T=5, solver="homo
     }
 
 
-def calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, threshold=20.0, anchor_cache=None, solver=None):
-    if threshold <= 0.0:
-        raise ValueError("threshold must be strictly positive")
+def calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, threshold=20.0, anchor_cache=None):
     X_list = observed_state["X_list"]
     Y_list = observed_state["Y_list"]
     folds = observed_state["folds"]
     n_list = observed_state["n_list"]
     M_obs = observed_state["M_obs"]
-    observed_solver = observed_state.get("solver", "homotopy")
-    if solver is None:
-        solver = observed_solver
-    if solver != observed_solver:
-        raise ValueError("Observed fitting and SI must use the same solver")
-    if j not in M_obs:
-        raise ValueError("The tested feature j must belong to M_obs")
     n0 = n_list[-1]
     n = sum(n_list)
     Y = np.concatenate(Y_list)
@@ -77,7 +68,7 @@ def calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, t
     z_max = max(threshold * stdev, z_obs)
     a, b = calculate_a_b(eta, Y, Sigma)
 
-    Z = compute_Z(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max, z_obs, anchor_cache=anchor_cache, solver=solver)
+    Z = compute_Z(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max, z_obs, anchor_cache=anchor_cache, solver=observed_state["solver"])
     p_value = calculate_TN_p_value(Z, eta, etaTY, Sigma)
     return p_value
 
