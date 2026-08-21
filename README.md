@@ -1,4 +1,4 @@
-# SI-ACoRT: Selective Inference for Adaptive CoRT
+# SI-ACoRT: Statistical Inference for Adaptive CoRT
 
 **SI-ACoRT** provides selective p-values after Adaptive CoRT source filtration
 and target-feature selection.
