@@ -1,7 +1,18 @@
 # SI-ACoRT: Statistical Inference for Adaptive CoRT
 
-**SI-ACoRT** provides selective p-values after Adaptive CoRT source filtration
-and target-feature selection.
+**SI-ACoRT** provides selective p-values for target features selected by
+Adaptive CoRT.
+
+## Method Overview
+
+![SI-ACoRT overview](figures/si_acort_overview.png)
+*Figure 1: Overview of SI-ACoRT.*
+
+![Source-selection regions](figures/source_selection_region.png)
+*Figure 2: Source-selection regions induced by cross-validation voting along the parameterized line $\mathbf{Y}(z)=\mathbf{a}+\mathbf{b}z$.*
+
+![Truncation-region construction](figures/truncation_region.png)
+*Figure 3: Construction of the truncation region $\mathcal{Z}=\{z\in\mathbb{R}\mid\mathcal{M}(\mathbf{Y}(z))=\mathcal{M}_{\mathrm{obs}}\}$.*
 
 ## Requirements
 
