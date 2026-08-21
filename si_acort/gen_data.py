@@ -1,5 +1,3 @@
-"""Synthetic-data generator used by the SI-ACoRT examples."""
-
 from __future__ import annotations
 
 import numpy as np

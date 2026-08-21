@@ -1,5 +1,3 @@
-"""Public API for SI-ACoRT."""
-
 from .algorithms import CoRT, adaptive_source_selection
 from .gen_data import generate_synthetic_data
 from .SI_ACoRT import SI_ACoRT, SI_ACoRT_randj

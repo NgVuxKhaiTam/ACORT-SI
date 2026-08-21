@@ -1,5 +1,3 @@
-"""Observed Lasso, CoRT, and adaptive source-selection procedures."""
-
 from __future__ import annotations
 
 import numpy as np

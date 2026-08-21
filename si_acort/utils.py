@@ -1,5 +1,3 @@
-"""Shared constructions and selective-inference utilities for SI-ACoRT."""
-
 from __future__ import annotations
 
 import math
@@ -9,7 +7,6 @@ import scipy.special
 
 
 def construct_active_set(beta):
-    """Return the exact nonzero support of a coefficient vector."""
     return np.flatnonzero(np.asarray(beta) != 0.0).tolist()
 
 
@@ -102,7 +99,6 @@ def intersect_interval_lists(intervals_a, intervals_b, tol=1e-8):
 
 
 def solve_quadratic_ineq(A, B, C, tol=1e-12):
-    """Solve A*z**2 + B*z + C <= 0 on the real line."""
     A = float(A)
     B = float(B)
     C = float(C)
@@ -156,7 +152,6 @@ def construct_test_statistic(j, X0M, Y, M, n0, n):
 
 
 def _normal_interval_masses(left, right, mean, sigma):
-    """Gaussian masses for possibly infinite interval endpoints."""
     if not np.isfinite(sigma) or sigma <= 0.0:
         raise ValueError(f"The Gaussian standard deviation must be positive; got {sigma}" )
 
@@ -197,7 +192,6 @@ def calculate_a_b(eta, Y, Sigma):
 
 
 def calculate_TN_p_value(intervals, eta, etaTY, Sigma, tn_mu=0.0):
-    """Paper's p-value P(|Z| >= |etaTY| | Z belongs to the interval union)."""
     intervals = [(left, right) for left, right in merge_intervals(intervals) if right > left ]
     if not intervals:
         raise ValueError("The truncation region is empty")

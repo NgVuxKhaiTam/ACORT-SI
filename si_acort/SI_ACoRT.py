@@ -1,5 +1,3 @@
-"""High-level selective-inference entry points for SI-ACoRT."""
-
 from __future__ import annotations
 
 import math
@@ -22,7 +20,6 @@ from .utils import (
 
 
 def construct_observed_state(X_list, Y_list, lambda_list, lam, T=5, solver="homotopy"):
-    """Run the observed source-selection and CoRT stages."""
     if len(X_list) != len(Y_list):
         raise ValueError("X_list and Y_list must have the same length")
     if len(X_list) != len(lambda_list):
@@ -64,7 +61,6 @@ def construct_observed_state(X_list, Y_list, lambda_list, lam, T=5, solver="homo
 
 
 def calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, threshold=20.0, anchor_cache=None, solver=None):
-    """Calculate the SI-ACoRT p-value for one selected target feature."""
     if threshold <= 0.0:
         raise ValueError("threshold must be strictly positive")
     X_list = observed_state["X_list"]
@@ -100,7 +96,6 @@ def calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, t
 
 
 def SI_ACoRT(X_list, Y_list, lambda_list, lam, Sigma_list, T=5, threshold=20.0, solver="homotopy"):
-    """Return selective p-values for every feature selected by ACoRT."""
     observed_state = construct_observed_state(X_list, Y_list, lambda_list, lam, T, solver)
     if not observed_state["M_obs"]:
         return None
@@ -116,7 +111,6 @@ def SI_ACoRT(X_list, Y_list, lambda_list, lam, Sigma_list, T=5, threshold=20.0, 
 
 
 def SI_ACoRT_randj(X_list, Y_list, lambda_list, lam, Sigma_list, T=5, threshold=20.0, solver="homotopy"):
-    """Return the selective p-value for one random selected feature."""
     observed_state = construct_observed_state(X_list, Y_list, lambda_list, lam, T, solver)
     if not observed_state["M_obs"]:
         return None

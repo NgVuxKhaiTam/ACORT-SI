@@ -1,5 +1,3 @@
-"""Response-parametric weighted-Lasso homotopy."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -127,7 +125,6 @@ def _trace_ray(X, y_start, beta_start, response_direction, penalty_weights, t_li
 
 
 def compute_solution_path(X, y_anchor, response_slope, penalty_weights, z_anchor, z_min, z_max, beta_anchor=None, **trace_options):
-    """Return affine weighted-Lasso path segments and the anchor solution."""
     X = np.asfortranarray(np.asarray(X, dtype=float))
     y_anchor = np.asarray(y_anchor, dtype=float).reshape(-1)
     response_slope = np.asarray(response_slope, dtype=float).reshape(-1)
@@ -171,7 +168,6 @@ def compute_solution_path(X, y_anchor, response_slope, penalty_weights, z_anchor
 
 
 def solve_weighted_lasso(X, y, penalty_weights, **trace_options):
-    """Solve one weighted Lasso through the auxiliary path from zero."""
     X = np.asfortranarray(np.asarray(X, dtype=float))
     y = np.asarray(y, dtype=float).reshape(-1)
     penalty_weights = np.asarray(penalty_weights, dtype=float).reshape(-1)

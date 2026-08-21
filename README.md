@@ -18,41 +18,36 @@ The `homotopy` solver requires Python 3.8+ with
 and [`skglm>=0.5`](https://contrib.scikit-learn.org/skglm/). The parallel pivot
 example also uses [`joblib`](https://joblib.readthedocs.io/).
 
-## Package structure
-
-```
-ACORT-SI/
-├── si_acort/                         # Source code package
-│   ├── SI_ACoRT.py                   # Main inference entry points
-│   ├── algorithms.py                 # Observed Lasso, source selection, CoRT
-│   ├── homotopy.py                   # Critical-cone weighted-Lasso homotopy
-│   ├── sub_prob.py                   # Selection and truncation regions
-│   ├── utils.py                      # Matrix, interval, and p-value utilities
-│   └── gen_data.py                   # Synthetic data generation
-├── examples/
-│   ├── ex1_p_value_SI_ACoRT.ipynb
-│   └── ex2_pivot.ipynb
-└── README.md
-```
-
 ## Usage
 
 ```python
 import numpy as np
 from si_acort import SI_ACoRT, generate_synthetic_data
 
-p = 30
-X_list, Y_list, Sigma_list, _ = generate_synthetic_data(
-    p=p, s=5, K=3, num_good_sources=2, n0=50, nk=50,
-    true_beta=0.5, h=1.0, seed=42,
+p = 500
+s = 10
+K = 10
+n0 = 100
+nk = 100
+
+X_list, Y_list, Sigma_list, true_beta0 = generate_synthetic_data(
+    p=p, s=s, K=K, num_good_sources=7, n0=n0, nk=nk,
+    true_beta=0.5, h=20.0, seed=42,
 )
 n_list = [X.shape[0] for X in X_list]
-lambda_list = [0.6 * np.sqrt(2.0 * np.log(p) / n) for n in n_list]
+lambda_list = [2.0 * np.sqrt(np.log(p) / n) for n in n_list]
+lam = 1.0
 
 p_values = SI_ACoRT(
-    X_list, Y_list, lambda_list, lam=0.25, Sigma_list=Sigma_list,
-    T=5, solver="homotopy",
+    X_list=X_list, Y_list=Y_list, lambda_list=lambda_list,
+    lam=lam, Sigma_list=Sigma_list, T=5,
 )
+
+if p_values is None:
+    print('No target feature was selected.')
+else:
+    for j, p_value in p_values:
+        print(f'feature={j:3d}  beta*={true_beta0[j]: .3f}  p={p_value:.6f}')
 ```
 
 `p_values` is `None` if no target feature is selected; otherwise it is a list
