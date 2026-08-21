@@ -18,25 +18,17 @@ from .utils import (
 
 
 def construct_observed_state(X_list, Y_list, lambda_list, lam, T=5, solver="homotopy"):
-    if len(X_list) != len(Y_list):
-        raise ValueError("X_list and Y_list must have the same length")
-    if len(X_list) != len(lambda_list):
-        raise ValueError("lambda_list must contain one value per data block")
-    if len(X_list) < 1:
-        raise ValueError("At least the target data block is required")
+    if solver not in {"homotopy", "skglm"}:
+        raise ValueError("solver must be 'homotopy' or 'skglm'")
+    if lam <= 0.0 or any(value <= 0.0 for value in lambda_list):
+        raise ValueError("The penalty parameters must be strictly positive")
+    if not 0 < T <= len(Y_list[-1]) or T % 2 == 0:
+        raise ValueError("T must be odd and between 1 and the target sample size")
     folds = construct_folds(len(Y_list[-1]), T)
-    if len(folds) % 2 == 0:
-        raise ValueError("The number of folds T must be odd")
 
     X_list = [np.asarray(X, dtype=float) for X in X_list]
     Y_list = [np.asarray(Y, dtype=float).reshape(-1) for Y in Y_list]
     p = X_list[0].shape[1]
-    if any(X.ndim != 2 or X.shape[1] != p for X in X_list):
-        raise ValueError("All design matrices must have the same column dimension")
-    if any(X.shape[0] != Y.size for X, Y in zip(X_list, Y_list)):
-        raise ValueError("Each design block must match its response block")
-    if any(value <= 0.0 for value in lambda_list):
-        raise ValueError("Every CoRT penalty must be strictly positive")
 
     n_list = [X.shape[0] for X in X_list]
     I_obs = adaptive_source_selection(X_list, Y_list, folds, lam, solver)
@@ -73,9 +65,6 @@ def calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, t
         raise ValueError("Observed fitting and SI must use the same solver")
     if j not in M_obs:
         raise ValueError("The tested feature j must belong to M_obs")
-    if len(Sigma_list) != len(X_list):
-        raise ValueError("Sigma_list must contain one covariance per data block")
-
     n0 = n_list[-1]
     n = sum(n_list)
     Y = np.concatenate(Y_list)

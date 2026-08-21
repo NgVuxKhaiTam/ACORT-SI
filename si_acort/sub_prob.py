@@ -341,6 +341,4 @@ def compute_Z_skglm(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min,
 def compute_Z(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max, z_obs, tol=1e-8, anchor_cache=None, solver="homotopy"):
     if solver == "homotopy":
         return compute_Z_homotopy(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max, z_obs, tol, anchor_cache)
-    if solver == "skglm":
-        return compute_Z_skglm(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max, tol)
-    raise ValueError("solver must be 'homotopy' or 'skglm'")
+    return compute_Z_skglm(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max, tol)

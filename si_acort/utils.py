@@ -9,10 +9,6 @@ def construct_active_set(beta):
 
 
 def construct_folds(n0, T=5, shuffle=False, random_state=0):
-    if T <= 0:
-        raise ValueError("T must be positive")
-    if T > n0:
-        raise ValueError("T cannot exceed the target sample size")
     indices = np.arange(n0)
     if shuffle:
         indices = np.random.default_rng(random_state).permutation(indices)
@@ -145,8 +141,6 @@ def _normal_interval_masses(left, right, mean, sigma):
     left = np.asarray(left, dtype=float)
     right = np.asarray(right, dtype=float)
     left, right = np.broadcast_arrays(left, right)
-    if np.any(np.isnan(left)) or np.any(np.isnan(right)):
-        raise ValueError("Gaussian interval endpoints cannot be NaN")
 
     masses = np.zeros(left.shape, dtype=float)
     valid = right > left
@@ -183,10 +177,7 @@ def calculate_TN_p_value(intervals, eta, etaTY, Sigma, tn_mu=0.0):
     if not intervals:
         raise ValueError("The truncation region is empty")
 
-    variance = float(eta.ravel() @ Sigma @ eta.ravel())
-    if not np.isfinite(variance) or variance <= 0.0:
-        raise ValueError(f"eta.T @ Sigma @ eta must be positive; got {variance}")
-    sigma = math.sqrt(variance)
+    sigma = math.sqrt(float(eta.ravel() @ Sigma @ eta.ravel()))
     bounds = np.asarray(intervals, dtype=float)
     denominator = float(np.sum(_normal_interval_masses(bounds[:, 0], bounds[:, 1], tn_mu, sigma ) ) )
     if denominator <= 0.0:
