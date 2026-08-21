@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-import scipy.special
+from scipy.stats import norm
 
 
 def construct_active_set(beta):
@@ -152,8 +152,8 @@ def _normal_interval_masses(left, right, mean, sigma):
     valid_masses = np.empty(z_left.shape, dtype=float)
 
     positive = z_left >= 0.0
-    valid_masses[positive] = (scipy.special.ndtr(-z_left[positive]) - scipy.special.ndtr(-z_right[positive]) )
-    valid_masses[~positive] = (scipy.special.ndtr(z_right[~positive]) - scipy.special.ndtr(z_left[~positive]) )
+    valid_masses[positive] = norm.sf(z_left[positive]) - norm.sf(z_right[positive])
+    valid_masses[~positive] = norm.cdf(z_right[~positive]) - norm.cdf(z_left[~positive])
     masses[valid] = np.maximum(valid_masses, 0.0)
     return masses
 
