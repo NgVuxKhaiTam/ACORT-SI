@@ -137,25 +137,25 @@ def construct_test_statistic(j, X0M, Y, M, n0, n):
     return eta.reshape(-1, 1), etaTY
 
 
-def _normal_interval_masses(left, right, mean, sigma):
+def _normal_interval_probabilities(left, right, mean, sigma):
     left = np.asarray(left, dtype=float)
     right = np.asarray(right, dtype=float)
     left, right = np.broadcast_arrays(left, right)
 
-    masses = np.zeros(left.shape, dtype=float)
+    probabilities = np.zeros(left.shape, dtype=float)
     valid = right > left
     if not np.any(valid):
-        return masses
+        return probabilities
 
     z_left = (left[valid] - mean) / sigma
     z_right = (right[valid] - mean) / sigma
-    valid_masses = np.empty(z_left.shape, dtype=float)
+    valid_probabilities = np.empty(z_left.shape, dtype=float)
 
     positive = z_left >= 0.0
-    valid_masses[positive] = norm.sf(z_left[positive]) - norm.sf(z_right[positive])
-    valid_masses[~positive] = norm.cdf(z_right[~positive]) - norm.cdf(z_left[~positive])
-    masses[valid] = np.maximum(valid_masses, 0.0)
-    return masses
+    valid_probabilities[positive] = norm.sf(z_left[positive]) - norm.sf(z_right[positive])
+    valid_probabilities[~positive] = norm.cdf(z_right[~positive]) - norm.cdf(z_left[~positive])
+    probabilities[valid] = np.maximum(valid_probabilities, 0.0)
+    return probabilities
 
 
 def calculate_a_b(eta, Y, Sigma):
@@ -179,12 +179,12 @@ def calculate_TN_p_value(intervals, eta, etaTY, Sigma, tn_mu=0.0):
 
     sigma = math.sqrt(float(eta.ravel() @ Sigma @ eta.ravel()))
     bounds = np.asarray(intervals, dtype=float)
-    denominator = float(np.sum(_normal_interval_masses(bounds[:, 0], bounds[:, 1], tn_mu, sigma ) ) )
+    denominator = float(np.sum(_normal_interval_probabilities(bounds[:, 0], bounds[:, 1], tn_mu, sigma ) ) )
     if denominator <= 0.0:
-        raise ValueError("The truncation region has zero Gaussian mass")
+        raise ValueError("The truncation region has zero Gaussian probability")
 
     cutoff = abs(float(etaTY))
-    left_tail_mass = np.sum(_normal_interval_masses(bounds[:, 0], np.minimum(bounds[:, 1], -cutoff), tn_mu, sigma) )
-    right_tail_mass = np.sum(_normal_interval_masses(np.maximum(bounds[:, 0], cutoff), bounds[:, 1], tn_mu, sigma) )
-    numerator = float(left_tail_mass + right_tail_mass)
+    left_tail_probability = np.sum(_normal_interval_probabilities(bounds[:, 0], np.minimum(bounds[:, 1], -cutoff), tn_mu, sigma) )
+    right_tail_probability = np.sum(_normal_interval_probabilities(np.maximum(bounds[:, 0], cutoff), bounds[:, 1], tn_mu, sigma) )
+    numerator = float(left_tail_probability + right_tail_probability)
     return float(np.clip(numerator / denominator, 0.0, 1.0))
