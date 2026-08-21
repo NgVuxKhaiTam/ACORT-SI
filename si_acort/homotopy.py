@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 import numpy as np
@@ -179,6 +177,3 @@ def solve_weighted_lasso(X, y, penalty_weights, **trace_options):
         raise ValueError("penalty_weights must be strictly positive")
     _, beta = _trace_ray(X, np.zeros_like(y), np.zeros(X.shape[1]), y, penalty_weights, 1.0, **trace_options)
     return beta
-
-
-__all__ = ["HomotopyError", "PathSegment", "compute_solution_path", "solve_weighted_lasso"]

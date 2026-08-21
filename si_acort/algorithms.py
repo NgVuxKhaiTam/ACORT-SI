@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import numpy as np
 
 from .homotopy import solve_weighted_lasso
@@ -92,6 +90,3 @@ def adaptive_source_selection(X_list, Y_list, folds, lam, solver="homotopy"):
 
     threshold = (len(folds) + 1) // 2
     return np.flatnonzero(votes >= threshold).tolist()
-
-
-__all__ = ["CoRT", "CoRT_homotopy", "CoRT_skglm", "adaptive_source_selection", "solve_lasso", "solve_lasso_homotopy", "solve_lasso_skglm"]

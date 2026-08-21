@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections import defaultdict
 
 import numpy as np
@@ -351,6 +349,3 @@ def compute_Z(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max
     if solver == "skglm":
         return compute_Z_skglm(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max, tol)
     raise ValueError("solver must be 'homotopy' or 'skglm'")
-
-
-__all__ = ["calculate_validation_loss_coefficients", "compute_Z", "compute_Z_homotopy", "compute_Z_skglm", "compute_fixed_I_support_region", "compute_fold_selection_region", "compute_majority_selection_region", "compute_source_selection_partitions", "compute_source_selection_partitions_skglm"]

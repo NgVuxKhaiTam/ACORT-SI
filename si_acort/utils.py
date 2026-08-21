@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import math
 
 import numpy as np
@@ -210,6 +208,3 @@ def calculate_TN_p_value(intervals, eta, etaTY, Sigma, tn_mu=0.0):
     right_tail_mass = np.sum(_normal_interval_masses(np.maximum(bounds[:, 0], cutoff), bounds[:, 1], tn_mu, sigma) )
     numerator = float(left_tail_mass + right_tail_mass)
     return float(np.clip(numerator / denominator, 0.0, 1.0))
-
-
-__all__ = ["calculate_TN_p_value", "calculate_a_b", "complement_fold_indices", "construct_X_tilde", "construct_Y_tilde", "construct_active_set", "construct_block_slices", "construct_f", "construct_folds", "construct_test_statistic", "construct_w_tilde", "intersect_interval_lists", "merge_intervals", "point_in_interval_list", "solve_quadratic_ineq"]

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import math
 
 import numpy as np
@@ -117,6 +115,3 @@ def SI_ACoRT_randj(X_list, Y_list, lambda_list, lam, Sigma_list, T=5, threshold=
     j = int(np.random.choice(observed_state["M_obs"]))
     p_value = calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, threshold, anchor_cache={})
     return j, p_value
-
-
-__all__ = ["SI_ACoRT", "SI_ACoRT_randj", "calculate_feature_p_value", "construct_observed_state"]

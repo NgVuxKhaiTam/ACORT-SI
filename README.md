@@ -15,7 +15,8 @@ example also uses [`joblib`](https://joblib.readthedocs.io/).
 
 ```python
 import numpy as np
-from si_acort import SI_ACoRT, generate_synthetic_data
+from si_acort.SI_ACoRT import SI_ACoRT
+from si_acort.gen_data import generate_synthetic_data
 
 p = 500
 s = 10

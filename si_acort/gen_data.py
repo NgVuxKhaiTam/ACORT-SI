@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import numpy as np
 
 
@@ -38,6 +36,3 @@ def generate_synthetic_data(p=500, s=10, K=10, num_good_sources=7, n0=50, nk=100
     Y_list.append(Y0)
     Sigma_list.append(sigma_noise**2 * np.eye(n0))
     return X_list, Y_list, Sigma_list, beta_0
-
-
-__all__ = ["generate_synthetic_data"]
