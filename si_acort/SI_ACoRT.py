@@ -106,12 +106,3 @@ def SI_ACoRT(X_list, Y_list, lambda_list, lam, Sigma_list, T=5, threshold=20.0, 
         )
         for j in observed_state["M_obs"]
     ]
-
-
-def SI_ACoRT_randj(X_list, Y_list, lambda_list, lam, Sigma_list, T=5, threshold=20.0, solver="homotopy"):
-    observed_state = construct_observed_state(X_list, Y_list, lambda_list, lam, T, solver)
-    if not observed_state["M_obs"]:
-        return None
-    j = int(np.random.choice(observed_state["M_obs"]))
-    p_value = calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, threshold, anchor_cache={})
-    return j, p_value
