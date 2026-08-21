@@ -37,7 +37,7 @@ set. The union of the intervals on which this active set equals
 $\mathcal{M}_{\mathrm{obs}}$ forms the truncation region $\mathcal{Z}$.
 
 ![Truncation-region construction](figures/truncation_region.png)
-*Figure 3: Construction of the truncation region $\mathcal{Z}=\{z\in\mathbb{R}\mid\mathcal{M}(\mathbf{Y}(z))=\mathcal{M}_{\mathrm{obs}}\}$.*
+*Figure 3: Illustration of the construction of the truncation region $\mathcal{Z}$.*
 
 ---
 
