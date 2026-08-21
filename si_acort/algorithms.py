@@ -62,11 +62,6 @@ def CoRT(X_tilde, Y_tilde, w_tilde, p, solver="homotopy"):
 
 
 def adaptive_source_selection(X_list, Y_list, folds, lam, solver="homotopy"):
-    if len(folds) % 2 == 0:
-        raise ValueError("The number of folds T must be odd for majority voting")
-    if len(X_list) != len(Y_list) or len(X_list) < 1:
-        raise ValueError("X_list and Y_list must contain the same data blocks")
-
     X0 = np.asarray(X_list[-1], dtype=float)
     Y0 = np.asarray(Y_list[-1], dtype=float).reshape(-1)
     votes = np.zeros(len(X_list) - 1, dtype=int)

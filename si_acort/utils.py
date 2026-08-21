@@ -128,13 +128,7 @@ def point_in_interval_list(value, intervals, tol=1e-10):
 
 def construct_test_statistic(j, X0M, Y, M, n0, n):
     M = list(M)
-    if j not in M:
-        raise ValueError("j must belong to M")
-    if not 0 < n0 <= n:
-        raise ValueError("The sample sizes must satisfy 0 < n0 <= n")
     X0M = np.asarray(X0M, dtype=float)
-    if X0M.ndim != 2 or X0M.shape != (n0, len(M)):
-        raise ValueError("X0M must have shape (n0, len(M)) for the selected target design" )
     ej = np.zeros(len(M))
     ej[M.index(j)] = 1.0
     gram_solution = np.linalg.solve(X0M.T @ X0M, ej)
@@ -143,16 +137,11 @@ def construct_test_statistic(j, X0M, Y, M, n0, n):
     eta = np.zeros(n)
     eta[-n0:] = tail
     Y = np.asarray(Y, dtype=float).reshape(-1)
-    if Y.size != n:
-        raise ValueError(f"Y has size {Y.size}, but the test statistic expects n={n}" )
     etaTY = float(eta @ Y)
     return eta.reshape(-1, 1), etaTY
 
 
 def _normal_interval_masses(left, right, mean, sigma):
-    if not np.isfinite(sigma) or sigma <= 0.0:
-        raise ValueError(f"The Gaussian standard deviation must be positive; got {sigma}" )
-
     left = np.asarray(left, dtype=float)
     right = np.asarray(right, dtype=float)
     left, right = np.broadcast_arrays(left, right)

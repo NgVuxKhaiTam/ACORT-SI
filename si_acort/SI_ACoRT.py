@@ -99,10 +99,4 @@ def SI_ACoRT(X_list, Y_list, lambda_list, lam, Sigma_list, T=5, threshold=20.0, 
         return None
 
     anchor_cache = {}
-    return [
-        (
-            j,
-            calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, threshold, anchor_cache),
-        )
-        for j in observed_state["M_obs"]
-    ]
+    return [(j, calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, threshold, anchor_cache)) for j in observed_state["M_obs"]]

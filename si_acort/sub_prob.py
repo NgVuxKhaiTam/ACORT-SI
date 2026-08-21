@@ -167,8 +167,6 @@ def compute_majority_selection_region(fold_regions, threshold, z_min, z_max, tol
 
 
 def compute_source_selection_partitions(X_list, folds, lam, a, b, z_min, z_max, z_obs, tol=1e-8, anchor_cache=None):
-    if len(folds) % 2 == 0:
-        raise ValueError("The number of folds T must be odd for majority voting")
     if anchor_cache is None:
         anchor_cache = {}
 
@@ -222,9 +220,6 @@ def compute_source_selection_partitions(X_list, folds, lam, a, b, z_min, z_max, 
 
 
 def compute_source_selection_partitions_skglm(X_list, folds, lam, a, b, z_min, z_max, tol=1e-8):
-    if len(folds) % 2 == 0:
-        raise ValueError("The number of folds T must be odd for majority voting")
-
     n_list = [X.shape[0] for X in X_list]
     slices = construct_block_slices(n_list)
     a0 = a[slices[-1]]
