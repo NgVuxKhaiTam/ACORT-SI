@@ -32,9 +32,15 @@ selected source set remains constant.
 *Figure 2: Source-selection regions induced by cross-validation voting along the parameterized line.*
 
 ### 3. Truncation-Region Construction
+The truncation region is
+
+```math
+\mathcal{Z}=\left\{z\in\mathbb{R}\mid\mathcal{M}(\mathbf{Y}(z))=\mathcal{M}_{\mathrm{obs}}\right\}.
+```
+
 Within each source-selection interval, CoRT estimation yields a target active
-set. The union of the intervals on which this active set equals
-$\mathcal{M}_{\mathrm{obs}}$ forms the truncation region $\mathcal{Z}$.
+set. SI-ACoRT takes the union of the intervals on which this active set equals
+$\mathcal{M}_{\mathrm{obs}}$.
 
 ![Truncation-region construction](figures/truncation_region.png)
 *Figure 3: Illustration of the construction of the truncation region $\mathcal{Z}$.*
