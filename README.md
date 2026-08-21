@@ -3,13 +3,6 @@
 **SI-ACoRT** provides selective p-values after Adaptive CoRT source filtration
 and target-feature selection.
 
-## Core properties
-
-- **Less-over-conditioned inference:** unions all source sets compatible with
-  the observed target support `M_obs`.
-- **Independent solvers:** supports `homotopy` and `skglm` without fallback
-  between them. The default solver is `homotopy`.
-
 ## Requirements
 
 The `homotopy` solver requires Python 3.8+ with
@@ -49,6 +42,3 @@ else:
     for j, p_value in p_values:
         print(f'feature={j:3d}  beta*={true_beta0[j]: .3f}  p={p_value:.6f}')
 ```
-
-`p_values` is `None` if no target feature is selected; otherwise it is a list
-of `(feature_index, selective_p_value)` pairs.
