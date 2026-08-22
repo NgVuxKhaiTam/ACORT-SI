@@ -3,7 +3,7 @@ from collections import defaultdict
 import numpy as np
 
 from .algorithms import CoRT_skglm, solve_lasso_skglm
-from .homotopy import PathSegment, compute_solution_path
+from .homotopy import PathSegment, recover_weighted_lasso_path
 from .utils import (
     complement_fold_indices,
     construct_X_tilde,
@@ -94,7 +94,7 @@ def _compute_state_interval(beta, X, a, b, penalty_weights):
     return intercept.ravel(), slope.ravel(), interval
 
 
-def _compute_state_path_skglm(X, a, b, penalty_weights, solve, z_min, z_max, step=1e-5, tol=1e-10):
+def _recover_weighted_lasso_path_skglm(X, a, b, penalty_weights, solve, z_min, z_max, step=1e-5, tol=1e-10):
     X = np.asfortranarray(np.asarray(X, dtype=float))
     a = np.asarray(a, dtype=float).reshape(-1, 1)
     b = np.asarray(b, dtype=float).reshape(-1, 1)
@@ -127,7 +127,7 @@ def calculate_validation_loss_coefficients(segment, X_val, a_val, b_val):
     return A, B, C
 
 
-def compute_fold_selection_region(target_path, combined_path, X_val, a_val, b_val, z_min, z_max, tol=1e-8):
+def compute_fold_voting_region(target_path, combined_path, X_val, a_val, b_val, z_min, z_max, tol=1e-8):
     result = []
     i = j = 0
     while i < len(target_path) and j < len(combined_path):
@@ -148,7 +148,7 @@ def compute_fold_selection_region(target_path, combined_path, X_val, a_val, b_va
     return merge_intervals(result, tol)
 
 
-def compute_majority_selection_region(fold_regions, threshold, z_min, z_max, tol=1e-8 ):
+def compute_majority_selection_region(fold_regions, min_votes, z_min, z_max, tol=1e-8 ):
     endpoints = [z_min, z_max]
     for regions in fold_regions:
         for left, right in regions:
@@ -161,12 +161,12 @@ def compute_majority_selection_region(fold_regions, threshold, z_min, z_max, tol
             continue
         midpoint = 0.5 * (left + right)
         votes = sum(point_in_interval_list(midpoint, regions, tol) for regions in fold_regions )
-        if votes >= threshold:
+        if votes >= min_votes:
             result.append((left, right))
     return merge_intervals(result, tol)
 
 
-def compute_source_selection_partitions(X_list, folds, lam, a, b, z_min, z_max, z_obs, tol=1e-8, anchor_cache=None):
+def compute_source_selection_partitions_homotopy(X_list, folds, lam, a, b, z_min, z_max, z_obs, tol=1e-8, anchor_cache=None):
     if anchor_cache is None:
         anchor_cache = {}
 
@@ -185,7 +185,7 @@ def compute_source_selection_partitions(X_list, folds, lam, a, b, z_min, z_max, 
         b_target_val = b0[fold_indices]
 
         target_key = ("filter-target", t)
-        target_path, target_anchor = compute_solution_path(X_target_train, (a_target_train + b_target_train * z_obs).ravel(), b_target_train.ravel(), np.full(X_target_train.shape[1], X_target_train.shape[0] * lam), z_obs, z_min, z_max, beta_anchor=anchor_cache.get(target_key))
+        target_path, target_anchor = recover_weighted_lasso_path(X_target_train, (a_target_train + b_target_train * z_obs).ravel(), b_target_train.ravel(), np.full(X_target_train.shape[1], X_target_train.shape[0] * lam), z_obs, z_min, z_max, beta_anchor=anchor_cache.get(target_key))
         anchor_cache[target_key] = target_anchor.copy()
 
         for k in range(len(X_list) - 1):
@@ -193,12 +193,12 @@ def compute_source_selection_partitions(X_list, folds, lam, a, b, z_min, z_max, 
             a_combined = np.vstack([a[slices[k]], a_target_train])
             b_combined = np.vstack([b[slices[k]], b_target_train])
             combined_key = ("filter-combined", t, k)
-            combined_path, combined_anchor = compute_solution_path(X_combined, (a_combined + b_combined * z_obs).ravel(), b_combined.ravel(), np.full(X_combined.shape[1], X_combined.shape[0] * lam), z_obs, z_min, z_max, beta_anchor=anchor_cache.get(combined_key))
+            combined_path, combined_anchor = recover_weighted_lasso_path(X_combined, (a_combined + b_combined * z_obs).ravel(), b_combined.ravel(), np.full(X_combined.shape[1], X_combined.shape[0] * lam), z_obs, z_min, z_max, beta_anchor=anchor_cache.get(combined_key))
             anchor_cache[combined_key] = combined_anchor.copy()
-            fold_regions[(t, k)] = compute_fold_selection_region(target_path, combined_path, X_target_val, a_target_val, b_target_val, z_min, z_max, tol)
+            fold_regions[(t, k)] = compute_fold_voting_region(target_path, combined_path, X_target_val, a_target_val, b_target_val, z_min, z_max, tol)
 
-    threshold = (len(folds) + 1) // 2
-    majority_regions = {k: compute_majority_selection_region([fold_regions[(t, k)] for t in range(len(folds))], threshold, z_min, z_max, tol) for k in range(len(X_list) - 1) }
+    min_votes = (len(folds) + 1) // 2
+    majority_regions = {k: compute_majority_selection_region([fold_regions[(t, k)] for t in range(len(folds))], min_votes, z_min, z_max, tol) for k in range(len(X_list) - 1) }
 
     endpoints = [z_min, z_max]
     for regions in majority_regions.values():
@@ -235,18 +235,18 @@ def compute_source_selection_partitions_skglm(X_list, folds, lam, a, b, z_min, z
         a_target_val = a0[fold_indices]
         b_target_val = b0[fold_indices]
         target_weights = np.full(X_target_train.shape[1], X_target_train.shape[0] * lam)
-        target_path = _compute_state_path_skglm(X_target_train, a_target_train, b_target_train, target_weights, lambda y: solve_lasso_skglm(X_target_train, y, lam), z_min, z_max)
+        target_path = _recover_weighted_lasso_path_skglm(X_target_train, a_target_train, b_target_train, target_weights, lambda y: solve_lasso_skglm(X_target_train, y, lam), z_min, z_max)
 
         for k in range(len(X_list) - 1):
             X_combined = np.vstack([X_list[k], X_target_train])
             a_combined = np.vstack([a[slices[k]], a_target_train])
             b_combined = np.vstack([b[slices[k]], b_target_train])
             combined_weights = np.full(X_combined.shape[1], X_combined.shape[0] * lam)
-            combined_path = _compute_state_path_skglm(X_combined, a_combined, b_combined, combined_weights, lambda y, X=X_combined: solve_lasso_skglm(X, y, lam), z_min, z_max)
-            fold_regions[(t, k)] = compute_fold_selection_region(target_path, combined_path, X_target_val, a_target_val, b_target_val, z_min, z_max, tol)
+            combined_path = _recover_weighted_lasso_path_skglm(X_combined, a_combined, b_combined, combined_weights, lambda y, X=X_combined: solve_lasso_skglm(X, y, lam), z_min, z_max)
+            fold_regions[(t, k)] = compute_fold_voting_region(target_path, combined_path, X_target_val, a_target_val, b_target_val, z_min, z_max, tol)
 
-    threshold = (len(folds) + 1) // 2
-    majority_regions = {k: compute_majority_selection_region([fold_regions[(t, k)] for t in range(len(folds))], threshold, z_min, z_max, tol) for k in range(len(X_list) - 1) }
+    min_votes = (len(folds) + 1) // 2
+    majority_regions = {k: compute_majority_selection_region([fold_regions[(t, k)] for t in range(len(folds))], min_votes, z_min, z_max, tol) for k in range(len(X_list) - 1) }
     endpoints = [z_min, z_max]
     for regions in majority_regions.values():
         for left, right in regions:
@@ -270,8 +270,8 @@ def compute_source_selection_partitions_skglm(X_list, folds, lam, a, b, z_min, z
     return partitions
 
 
-def compute_fixed_I_support_region(cort_path, target_start, p, M_obs, z_min, z_max, tol=1e-8):
-    observed_support = tuple(M_obs)
+def compute_cort_active_set_region(cort_path, target_start, p, M_obs, z_min, z_max, tol=1e-8):
+    observed_active_set = tuple(M_obs)
     result = []
     for segment in cort_path:
         left = max(segment.z_left, z_min)
@@ -280,7 +280,7 @@ def compute_fixed_I_support_region(cort_path, target_start, p, M_obs, z_min, z_m
             continue
         midpoint = 0.5 * (left + right)
         theta_target = segment.evaluate(midpoint)[target_start : target_start + p]
-        if tuple(construct_active_set(theta_target)) == observed_support:
+        if tuple(construct_active_set(theta_target)) == observed_active_set:
             result.append((left, right))
     return merge_intervals(result, tol)
 
@@ -288,7 +288,7 @@ def compute_fixed_I_support_region(cort_path, target_start, p, M_obs, z_min, z_m
 def compute_Z_homotopy(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max, z_obs, tol=1e-8, anchor_cache=None):
     if anchor_cache is None:
         anchor_cache = {}
-    partitions = compute_source_selection_partitions(X_list, folds, lam, a, b, z_min, z_max, z_obs, tol, anchor_cache)
+    partitions = compute_source_selection_partitions_homotopy(X_list, folds, lam, a, b, z_min, z_max, z_obs, tol, anchor_cache)
 
     regions_by_I = defaultdict(list)
     for left, right, I in partitions:
@@ -306,10 +306,10 @@ def compute_Z_homotopy(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_m
         b_I = np.vstack([b[slices[k]] for k in I + [-1]])
 
         cort_key = ("cort", I_tuple)
-        cort_path, cort_anchor = compute_solution_path(X_tilde, (f_tilde * (a_I + b_I * z_obs)).ravel(), (f_tilde * b_I).ravel(), w_tilde, z_obs, z_min, z_max, beta_anchor=anchor_cache.get(cort_key))
+        cort_path, cort_anchor = recover_weighted_lasso_path(X_tilde, (f_tilde * (a_I + b_I * z_obs)).ravel(), (f_tilde * b_I).ravel(), w_tilde, z_obs, z_min, z_max, beta_anchor=anchor_cache.get(cort_key))
         anchor_cache[cort_key] = cort_anchor.copy()
-        support_region = compute_fixed_I_support_region(cort_path, len(I) * p, p, M_obs, z_min, z_max, tol)
-        Z.extend(intersect_interval_lists(source_regions, support_region, tol))
+        active_set_region = compute_cort_active_set_region(cort_path, len(I) * p, p, M_obs, z_min, z_max, tol)
+        Z.extend(intersect_interval_lists(source_regions, active_set_region, tol))
 
     return merge_intervals(Z, tol)
 
@@ -332,9 +332,9 @@ def compute_Z_skglm(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min,
         b_I = np.vstack([b[slices[k]] for k in I + [-1]])
         a_tilde = f_tilde * a_I
         b_tilde = f_tilde * b_I
-        cort_path = _compute_state_path_skglm(X_tilde, a_tilde, b_tilde, w_tilde, lambda y, X=X_tilde, w=w_tilde: CoRT_skglm(X, y, w, p)[0], z_min, z_max)
-        support_region = compute_fixed_I_support_region(cort_path, len(I) * p, p, M_obs, z_min, z_max, tol)
-        Z.extend(intersect_interval_lists(source_regions, support_region, tol) )
+        cort_path = _recover_weighted_lasso_path_skglm(X_tilde, a_tilde, b_tilde, w_tilde, lambda y, X=X_tilde, w=w_tilde: CoRT_skglm(X, y, w, p)[0], z_min, z_max)
+        active_set_region = compute_cort_active_set_region(cort_path, len(I) * p, p, M_obs, z_min, z_max, tol)
+        Z.extend(intersect_interval_lists(source_regions, active_set_region, tol) )
     return merge_intervals(Z, tol)
 
 

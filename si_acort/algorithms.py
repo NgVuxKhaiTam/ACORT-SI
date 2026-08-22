@@ -71,5 +71,5 @@ def adaptive_source_selection(X_list, Y_list, folds, lam, solver="homotopy"):
             if lossk <= loss0:
                 votes[k] += 1
 
-    threshold = (len(folds) + 1) // 2
-    return np.flatnonzero(votes >= threshold).tolist()
+    min_votes = (len(folds) + 1) // 2
+    return np.flatnonzero(votes >= min_votes).tolist()

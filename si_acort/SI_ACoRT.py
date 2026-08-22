@@ -50,7 +50,7 @@ def construct_observed_state(X_list, Y_list, lambda_list, lam, T=5, solver="homo
     }
 
 
-def calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, threshold=20.0, anchor_cache=None):
+def calculate_SI_ACoRT_p_value(observed_state, j, lambda_list, lam, Sigma_list, z_scale=20.0, anchor_cache=None):
     X_list = observed_state["X_list"]
     Y_list = observed_state["Y_list"]
     folds = observed_state["folds"]
@@ -64,8 +64,8 @@ def calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, t
     eta, etaTY = construct_test_statistic(j, X0M, Y, M_obs, n0, n)
     stdev = math.sqrt(float(eta.ravel() @ Sigma @ eta.ravel()))
     z_obs = float(etaTY)
-    z_min = min(-threshold * stdev, z_obs)
-    z_max = max(threshold * stdev, z_obs)
+    z_min = min(-z_scale * stdev, z_obs)
+    z_max = max(z_scale * stdev, z_obs)
     a, b = calculate_a_b(eta, Y, Sigma)
 
     Z = compute_Z(X_list, folds, lam, a, b, M_obs, lambda_list, n_list, z_min, z_max, z_obs, anchor_cache=anchor_cache, solver=observed_state["solver"])
@@ -73,10 +73,10 @@ def calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, t
     return p_value
 
 
-def SI_ACoRT(X_list, Y_list, lambda_list, lam, Sigma_list, T=5, threshold=20.0, solver="homotopy"):
+def SI_ACoRT(X_list, Y_list, lambda_list, lam, Sigma_list, T=5, z_scale=20.0, solver="homotopy"):
     observed_state = construct_observed_state(X_list, Y_list, lambda_list, lam, T, solver)
     if not observed_state["M_obs"]:
         return None
 
     anchor_cache = {}
-    return [(j, calculate_feature_p_value(observed_state, j, lambda_list, lam, Sigma_list, threshold, anchor_cache)) for j in observed_state["M_obs"]]
+    return [(j, calculate_SI_ACoRT_p_value(observed_state, j, lambda_list, lam, Sigma_list, z_scale, anchor_cache)) for j in observed_state["M_obs"]]

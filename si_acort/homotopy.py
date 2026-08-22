@@ -122,7 +122,7 @@ def _trace_ray(X, y_start, beta_start, response_direction, penalty_weights, t_li
     return segments, beta
 
 
-def compute_solution_path(X, y_anchor, response_slope, penalty_weights, z_anchor, z_min, z_max, beta_anchor=None, **trace_options):
+def recover_weighted_lasso_path(X, y_anchor, response_slope, penalty_weights, z_anchor, z_min, z_max, beta_anchor=None, **trace_options):
     X = np.asfortranarray(np.asarray(X, dtype=float))
     y_anchor = np.asarray(y_anchor, dtype=float).reshape(-1)
     response_slope = np.asarray(response_slope, dtype=float).reshape(-1)
